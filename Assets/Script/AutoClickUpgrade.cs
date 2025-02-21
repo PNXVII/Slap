@@ -7,18 +7,30 @@ public class AutoClickUpgrade : MonoBehaviour
 {  
     public int autoClicksPerSec;
     public int minimumClickToUnlock;
+    public AudioSource upgradeSound;
 
+    private float addClicks;
     private Manager manager;
     public TextMeshProUGUI priceText, amountText;
 
     private void Start()
     {
         manager = Manager.instance; ;
+
+        if(PlayerPrefs.GetInt("autoClicksPerSec") != 0)
+        {
+            autoClicksPerSec = PlayerPrefs.GetInt("autoClicksPerSec");
+        }
+        if(PlayerPrefs.GetInt("minimumClickToUnlock") != 0)
+        {
+            minimumClickToUnlock = PlayerPrefs.GetInt("minimumClickToUnlock");
+        }
         UpdateText();
     }
 
     public void BuyUpgrade()
     {
+
         if (manager.TotalClicks >= minimumClickToUnlock)
         {
             manager.TotalClicks -= minimumClickToUnlock;
@@ -26,7 +38,14 @@ public class AutoClickUpgrade : MonoBehaviour
             autoClicksPerSec++;
             minimumClickToUnlock *= 2;
 
+            PlayerPrefs.SetInt("autoClicksPerSec", autoClicksPerSec);
+            PlayerPrefs.SetInt("minimumClickToUnlock", minimumClickToUnlock);
             UpdateText();
+
+            if (upgradeSound != null)
+            {
+                upgradeSound.Play();
+            }
         }
     }
 
@@ -34,15 +53,26 @@ public class AutoClickUpgrade : MonoBehaviour
     {
         if (autoClicksPerSec > 0)
         {
-            manager.TotalClicks += autoClicksPerSec * Time.deltaTime;
-             
-            manager.ClickTotalText.text = manager.TotalClicks.ToString("0");
+
+            addClicks += autoClicksPerSec * Time.deltaTime;
+            int clicksToAdd = Mathf.FloorToInt(addClicks);
+
+            Debug.Log("addClicks: " + addClicks + " | clicksToAdd: " + clicksToAdd);
+
+            if (clicksToAdd > 0)
+            {
+                manager.AddClicks(clicksToAdd, true);
+                addClicks -= clicksToAdd;
+
+                Debug.Log("เพิ่มคลิก: " + clicksToAdd + " | TotalClicks: " + manager.TotalClicks);
+            }
+
         }
     }
 
     private void UpdateText()
     {
-        priceText.text = "Need" + minimumClickToUnlock.ToString("0");
+        priceText.text = "Need " + minimumClickToUnlock.ToString("0") + " score";
         amountText.text = "+" + (autoClicksPerSec + 1).ToString() + "/s";
     }
 }

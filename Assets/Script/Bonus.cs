@@ -18,6 +18,13 @@ public class Bonus : MonoBehaviour
     private void Start()
     {
         manager = Manager.instance; ;
+
+        if(PlayerPrefs.GetInt("HasBonusUpgrade") == 1)
+        {
+            hasUpgrade = true;
+            GetComponent<Button>().interactable = false;
+        }
+
         UpdateText();
     }
 
@@ -28,6 +35,7 @@ public class Bonus : MonoBehaviour
             manager.TotalClicks -= minimumClickToUnlock;
 
             hasUpgrade = true;
+            PlayerPrefs.SetInt("HasBonusUpgrade", 1);
             GetComponent<Button>().interactable = false;
         }
     }
